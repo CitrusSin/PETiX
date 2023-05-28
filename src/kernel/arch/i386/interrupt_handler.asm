@@ -34,6 +34,7 @@ interrupt_entry:
     push esp            ; Call with the register status struct
     push eax
     call [interrupt_handler_table + eax * 4]
+    add esp, 2*4
 
     pop ds
     pop es
