@@ -42,7 +42,7 @@ static void interrupt_exception_handler(int number, cpu_i386_interrupt_snapshot_
     );
 
     panic(
-        "Exceptional interrupt %#02x: %s\nRegisters:\n%s\nSegment registers:\n%s\n",
+        "Exceptional interrupt %#04x: %s\nRegisters:\n%s\nSegment registers:\n%s\n",
         number, msg, register_status, segment_register_status
     );
 }

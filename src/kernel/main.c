@@ -60,6 +60,5 @@ void kernel_init()
     printk("CPU Manufacturer: \t%s\n", get_cpu_manufacturer(cpu_type));
     printk("CPU Type: \t\t%s\n", get_cpu_type(cpu_type));
 
-    int r = 8/0;
-    printk("Test 3\n");
+    panic("Unimplemented yet");
 }
