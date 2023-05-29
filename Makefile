@@ -27,7 +27,7 @@ qemui386: $(BUILD)/master_i386.img
 	qemu-system-i386 \
 		-m 32M \
 		-boot c \
-		-hda $< 
+		-drive file=$<,if=ide,index=0,media=disk,format=raw 
 
 .PHONY: qemui386-gdb
 qemui386-gdb: $(BUILD)/master_i386.img
@@ -35,7 +35,7 @@ qemui386-gdb: $(BUILD)/master_i386.img
 		-s -S \
 		-m 32M \
 		-boot c \
-		-hda $< 
+		-drive file=$<,if=ide,index=0,media=disk,format=raw 
 
 .PHONY: clean
 clean:
