@@ -3,6 +3,7 @@
 #include <petix/string.h>
 #include <petix/stdarg.h>
 #include <petix/assert.h>
+#include <petix/time.h>
 #include <petix/arch/i386.h>
 
 char *get_cpu_manufacturer(char *str)
@@ -52,7 +53,14 @@ void kernel_init()
     petix_console_clear();
 
     gdt_init();
-    idt_init();
+    interrupt_init();
+    clock_init();
+    time_init();
+
+    asm volatile (
+        "sti\n"
+        "movl %eax, %eax"
+    );
 
     printk("PETiX v0.1\n");
     printk("Entering kernel\n");
@@ -60,5 +68,10 @@ void kernel_init()
     printk("CPU Manufacturer: \t%s\n", get_cpu_manufacturer(cpu_type));
     printk("CPU Type: \t\t%s\n", get_cpu_type(cpu_type));
 
-    panic("Unimplemented yet");
+    printk("TestTest\n");
+
+    for (int i=0; ; i++) {
+        printk("Msg %ld\n", time(NULL));
+        delay(1000);
+    }
 }

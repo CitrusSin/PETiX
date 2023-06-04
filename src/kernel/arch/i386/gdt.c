@@ -19,7 +19,3 @@ void gdt_init() {
 
     PTDEBUG("GDT Save complete.");
 }
-
-segment_selector_t kernel_code_segment() {
-    return 1 << 3;
-}

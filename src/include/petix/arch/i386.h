@@ -59,16 +59,28 @@ typedef struct cpu_i386_interrupt_snapshot_t {
     u32 eflags;
 } cpu_i386_interrupt_snapshot_t;
 
-typedef void(*interrupt_handler_t)(int, cpu_i386_interrupt_snapshot_t*);
+typedef void(*interrupt_handler_t)(int, int, cpu_i386_interrupt_snapshot_t*);
 
 void gdt_init();
-void idt_init();
+void interrupt_init();
 
-void register_interrupt_handler(int number, interrupt_handler_t handler);
+void register_interrupt_handler(int interrupt_number, interrupt_handler_t handler);
+void pic_send_eoi(int interrupt_number);
 
-segment_selector_t kernel_code_segment();
+void beep(int freq_hz, int millisec);
+void bpr_set_enable(bool enable);
+void bpr_set_tune(int freq_hz);
+u64 uptime_ms();
 
 #define GDT_SIZE 32
 #define IDT_SIZE 256
+
+#define KRNL_CODE_SEG (1<<3)
+
+#define PIC_BEGIN_INTERRUPT 0x20
+#define CLOCK_INTERRUPT PIC_BEGIN_INTERRUPT + 0
+
+#define ENTER_NON_INTERRUPT u32 __eflags; asm volatile("pushf\npop %%eax\ncli":"=a"(__eflags))
+#define EXIT_NON_INTERRUPT asm volatile("push %%eax\npopf"::"a"(__eflags))
 
 #endif

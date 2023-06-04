@@ -27,7 +27,9 @@ qemui386: $(BUILD)/master_i386.img
 	qemu-system-i386 \
 		-m 32M \
 		-boot c \
-		-drive file=$<,if=ide,index=0,media=disk,format=raw 
+		-drive file=$<,if=ide,index=0,media=disk,format=raw \
+		-audiodev pa,id=hda \
+		-machine pcspk-audiodev=hda
 
 .PHONY: qemui386-gdb
 qemui386-gdb: $(BUILD)/master_i386.img
@@ -35,7 +37,9 @@ qemui386-gdb: $(BUILD)/master_i386.img
 		-s -S \
 		-m 32M \
 		-boot c \
-		-drive file=$<,if=ide,index=0,media=disk,format=raw 
+		-drive file=$<,if=ide,index=0,media=disk,format=raw \
+		-audiodev pa,id=hda \
+		-machine pcspk-audiodev=hda
 
 .PHONY: clean
 clean:
@@ -58,13 +62,16 @@ $(BUILD)/kernel/%.o: $(SRC)/kernel/%.c
 $(BUILD)/kernel_i386.elf: \
 	$(BUILD)/kernel/arch/i386/start.o \
 	$(BUILD)/kernel/main.o \
-	$(BUILD)/kernel/console.o \
 	$(BUILD)/kernel/memutil.o \
 	$(BUILD)/kernel/stdioimpl.o \
-	$(BUILD)/kernel/i64arith.o \
 	$(BUILD)/kernel/assert.o \
+	$(BUILD)/kernel/alg/priorityqueue.o \
+	$(BUILD)/kernel/arch/i386/i64arith.o \
+	$(BUILD)/kernel/arch/i386/console.o \
 	$(BUILD)/kernel/arch/i386/gdt.o \
-	$(BUILD)/kernel/arch/i386/idt.o \
+	$(BUILD)/kernel/arch/i386/time.o \
+	$(BUILD)/kernel/arch/i386/clock.o \
+	$(BUILD)/kernel/arch/i386/interrupt.o \
 	$(BUILD)/kernel/arch/i386/interrupt_handler.o
 
 	ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)

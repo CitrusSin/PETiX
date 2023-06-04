@@ -31,6 +31,17 @@ void *memset(void *dst, unsigned char value, size_t n) {
     for (register size_t i=0; i<n; i++) p[i] = value;
 }
 
+void memxchg(void* p1, void* p2, size_t n) {
+    char *cp1 = (char *)p1, *cp2 = (char *)p2;
+    for (size_t i=0; i<n; i++) {
+        char sw = *cp1;
+        *cp1 = *cp2;
+        *cp2 = sw;
+        cp1++;
+        cp2++;
+    }
+}
+
 size_t strlen(const char *str)
 {
     size_t p = 0;
