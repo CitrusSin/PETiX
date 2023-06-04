@@ -170,9 +170,136 @@ static bool tkm_read_char(token_machine* m, char c) {
     return false;
 }
 
+static char* tkm_make_signed_output(token_machine* m, char* str, va_list *args) {
+    char buf[128], prefix[128];
+
+    int64_t val;
+    switch (m->length_flag) {
+    case HALF:
+        val = va_arg(*args, int32_t);
+        break;
+    case NORMAL:
+        val = va_arg(*args, int32_t);
+        break;
+    case LONG:
+        val = va_arg(*args, int64_t);
+    }
+    bool neg = val < 0;
+    if (neg) val = -val;
+    
+    char *bufp = buf;
+    if (m->type == 'o' && m->radix_prefix) {
+        *(bufp++) = '0';
+    }
+    u64toa(bufp, val, m->radix);
+    
+    int pfx_len = 0;
+    if (neg) {
+        prefix[pfx_len++] = '-';
+    } else if (m->plus_prefix) {
+        prefix[pfx_len++] = '+';
+    }
+    prefix[pfx_len] = '\0';
+    int padding_len = maxi32(0, (int)(m->display_len) - strlen(buf) - strlen(prefix));
+    if (m->pad_right) {
+        for (int i=0; i<padding_len; i++) {
+            prefix[pfx_len++] = m->padding;
+        }
+        prefix[pfx_len] = '\0';
+    } else {
+        size_t k = strlen(buf);
+        for (int i=0; i<padding_len; i++) {
+            buf[k++] = m->padding;
+        }
+        buf[k] = '\0';
+    }
+    if (m->padding == ' ' && pfx_len > 0){
+        SWAP(char, prefix[0], prefix[pfx_len-1]);
+    }
+
+    strcat(prefix, buf);
+
+    if (m->empty_spc && strlen(prefix) == 0) {
+        prefix[0] = ' ';
+        prefix[1] = '\0';
+    }
+
+    for (char* p = prefix; *p; p++) {
+        *(str++) = *p;
+    }
+    return str;
+}
+
+static char* tkm_make_unsigned_output(token_machine* m, char *str, va_list args) {
+    char buf[128], prefix[128];
+    uint64_t val;
+
+    switch (m->length_flag) {
+    case HALF:
+        val = va_arg(*args, uint32_t);
+        break;
+    case NORMAL:
+        val = va_arg(*args, uint32_t);
+        break;
+    case LONG:
+        val = va_arg(*args, uint64_t);
+    }
+        
+    char *bufp = buf;
+    u64toa(bufp, val, m->radix);
+        
+    prefix[0] = '\0';
+    int pfx_len = 0;
+    if (m->plus_prefix) {
+        strcat(prefix, "+");
+        pfx_len += 1;
+    }
+    if ((m->type == 'x' || m->type == 'X') && m->radix_prefix) {
+        strcat(prefix, "0x");
+        pfx_len += 2;
+    }
+    prefix[pfx_len] = '\0';
+        
+    int padding_len = maxi32(0, (int)(m->display_len) - strlen(buf) - strlen(prefix));
+    if (m->padding == '0') {
+        for (int i=0; i<padding_len; i++) {
+            prefix[pfx_len++] = m->padding;
+        }
+        prefix[pfx_len] = '\0';
+    } else {
+        if (m->pad_right) {
+            size_t pf_len = strlen(prefix);
+            strcpy(prefix+padding_len, prefix);
+            pfx_len = 0;
+            for (int i=0; i<padding_len; i++) {
+                prefix[pfx_len++] = m->padding;
+            }
+            pfx_len += pf_len;
+            prefix[pfx_len] = '\0';
+        } else {
+            size_t k = strlen(buf);
+            for (int i=0; i<padding_len; i++) {
+                buf[k++] = m->padding;
+            }
+            buf[k] = '\0';
+        }
+    }
+
+    strcat(prefix, buf);
+
+    if (m->empty_spc && strlen(prefix) == 0) {
+        prefix[0] = ' ';
+        prefix[1] = '\0';
+    }
+
+    for (char* p = prefix; *p; p++) {
+        *(str++) = *p;
+    }
+    return str;
+}
+
 // Return the ending position
 static char* tkm_make_string(token_machine* m, char *str, va_list *args) {
-    char buf[128], prefix[128];
 
     if (m->display_len == FROM_ARGS) {
         m->display_len = va_arg(*args, uint32_t);
@@ -186,135 +313,13 @@ static char* tkm_make_string(token_machine* m, char *str, va_list *args) {
     switch (m->type) {
     case 'd':
     case 'o':
-    {
         // signed output
-        int64_t val;
-        switch (m->length_flag) {
-        case HALF:
-            val = va_arg(*args, int16_t);
-            break;
-        case NORMAL:
-            val = va_arg(*args, int32_t);
-            break;
-        case LONG:
-            val = va_arg(*args, int64_t);
-        }
-        bool neg = val < 0;
-        if (neg) val = -val;
-        
-        char *bufp = buf;
-        if (m->type == 'o' && m->radix_prefix) {
-            *(bufp++) = '0';
-        }
-        u64toa(bufp, val, m->radix);
-        
-        int pfx_len = 0;
-        if (neg) {
-            prefix[pfx_len++] = '-';
-        } else if (m->plus_prefix) {
-            prefix[pfx_len++] = '+';
-        }
-        prefix[pfx_len] = '\0';
-        int padding_len = maxi32(0, (int)(m->display_len) - strlen(buf) - strlen(prefix));
-        if (m->pad_right) {
-            for (int i=0; i<padding_len; i++) {
-                prefix[pfx_len++] = m->padding;
-            }
-            prefix[pfx_len] = '\0';
-        } else {
-            size_t k = strlen(buf);
-            for (int i=0; i<padding_len; i++) {
-                buf[k++] = m->padding;
-            }
-            buf[k] = '\0';
-        }
-        if (m->padding == ' ' && pfx_len > 0){
-            SWAP(char, prefix[0], prefix[pfx_len-1]);
-        }
-
-        strcat(prefix, buf);
-
-        if (m->empty_spc && strlen(prefix) == 0) {
-            prefix[0] = ' ';
-            prefix[1] = '\0';
-        }
-
-        for (char* p = prefix; *p; p++) {
-            *(str++) = *p;
-        }
-        return str;
-    }
-    break;
+        return tkm_make_signed_output(m, str, args);
     case 'u':
     case 'x':
     case 'X':
-    {
         // unsigned output
-        uint64_t val;
-        switch (m->length_flag) {
-        case HALF:
-            val = va_arg(*args, uint32_t);
-            break;
-        case NORMAL:
-            val = va_arg(*args, uint32_t);
-            break;
-        case LONG:
-            val = va_arg(*args, uint64_t);
-        }
-        
-        char *bufp = buf;
-        u64toa(bufp, val, m->radix);
-        
-        prefix[0] = '\0';
-        int pfx_len = 0;
-        if (m->plus_prefix) {
-            strcat(prefix, "+");
-            pfx_len += 1;
-        }
-        if ((m->type == 'x' || m->type == 'X') && m->radix_prefix) {
-            strcat(prefix, "0x");
-            pfx_len += 2;
-        }
-        prefix[pfx_len] = '\0';
-        
-        int padding_len = maxi32(0, (int)(m->display_len) - strlen(buf) - strlen(prefix));
-        if (m->padding == '0') {
-            for (int i=0; i<padding_len; i++) {
-                prefix[pfx_len++] = m->padding;
-            }
-            prefix[pfx_len] = '\0';
-        } else {
-            if (m->pad_right) {
-                size_t pf_len = strlen(prefix);
-                strcpy(prefix+padding_len, prefix);
-                pfx_len = 0;
-                for (int i=0; i<padding_len; i++) {
-                    prefix[pfx_len++] = m->padding;
-                }
-                pfx_len += pf_len;
-                prefix[pfx_len] = '\0';
-            } else {
-                size_t k = strlen(buf);
-                for (int i=0; i<padding_len; i++) {
-                    buf[k++] = m->padding;
-                }
-                buf[k] = '\0';
-            }
-        }
-
-        strcat(prefix, buf);
-
-        if (m->empty_spc && strlen(prefix) == 0) {
-            prefix[0] = ' ';
-            prefix[1] = '\0';
-        }
-
-        for (char* p = prefix; *p; p++) {
-            *(str++) = *p;
-        }
-        return str;
-    }
-    break;
+        return tkm_make_unsigned_output(m, str, args);
     case 's':
     {
         const char* str2 = va_arg(*args, const char*);
