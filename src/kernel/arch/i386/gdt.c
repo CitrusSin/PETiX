@@ -1,6 +1,6 @@
 #include <petix/petix.h>
 #include <petix/types.h>
-#include <petix/memory.h>
+#include <petix/memutil.h>
 #include <petix/arch/i386.h>
 
 static segment_descriptor_t gdt[GDT_SIZE];

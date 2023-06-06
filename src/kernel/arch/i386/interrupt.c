@@ -135,4 +135,9 @@ void interrupt_init() {
     for (int num = PIC_BEGIN_INTERRUPT; num < PIC_BEGIN_INTERRUPT + 0x10; num++) {
         register_interrupt_handler(num, outer_interrupt_handler);
     }
+
+    asm volatile (
+        "sti\n"
+        "movl %eax, %eax"
+    );
 }

@@ -1,5 +1,5 @@
 #include <petix/algorithm.h>
-#include <petix/memory.h>
+#include <petix/memutil.h>
 #include <petix/types.h>
 
 // Comp: less than

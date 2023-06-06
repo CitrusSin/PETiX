@@ -21,7 +21,7 @@ memory_detect:
         int 0x15
         jc error
         add di, 20
-        inc word [ards_count]
+        inc dword [ards_count]
         cmp ebx, 0
         jnz .loop
 
@@ -85,6 +85,10 @@ protected_mode:
     mov ecx, 10
     mov bl, 200
     call rdisk
+
+    mov eax, 1346720841
+    mov ebx, ards_count
+
     jmp dword code_selector:0x10000
     ud2
 
@@ -174,5 +178,5 @@ gdt_data:
     db (mem_base >> 24)&0xff
 gdt_end:
 
-ards_count dw 0
+ards_count dd 0
 ards_buf:

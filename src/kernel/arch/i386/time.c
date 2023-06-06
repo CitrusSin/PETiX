@@ -1,6 +1,7 @@
 #include <petix/petix.h>
 #include <petix/io.h>
 #include <petix/time.h>
+#include <petix/string.h>
 #include <petix/arch/i386.h>
 
 #define CMOS_OFFSET 0x70
@@ -17,8 +18,12 @@
 
 #define BCD_TO_BIN(val) ((((val)>>4)&0xf) * 10 + ((val) & 0xf))
 
-#define MIN(a, b) ((a)>(b)?(b):(a))
-#define MAX(a, b) ((a)>(b)?(a):(b))
+static u8 cmos_read(u8 addr) {
+    u8 data;
+    OUT8(CMOS_OFFSET, addr);
+    IN8(data, CMOS_DATA);
+    return data;
+}
 
 static int mth_begin_day[12] = {
     0,
@@ -44,13 +49,6 @@ static int nth_day_of_year(int year, int mon, int day) {
     if (mon > 2 && leap_year(year)) day_count++;
     day_count += day;
     return day_count;
-}
-
-static u8 cmos_read(u8 addr) {
-    u8 data;
-    OUT8(CMOS_OFFSET, addr);
-    IN8(data, CMOS_DATA);
-    return data;
 }
 
 static void tm_now(struct tm *t) {
@@ -88,38 +86,11 @@ static void tm_now(struct tm *t) {
     t->tm_year = c;
     t->tm_year *= 100;
     t->tm_year += y;
-    t->tm_wday = wkd;
+    t->tm_wday = wkd-1;
 
     t->tm_yday = nth_day_of_year(y, m, mtd);
 
     t->tm_isdst = 0;
-}
-
-time_t mktime(const struct tm* t) {
-    // 1970/1/1 00:00:00 UNIX Timestamp 0
-    // 2000/1/1 00:00:00 Base Timestamp
-
-    int leap_count = 0;
-    if (t->tm_year >= 2000) {
-        int years = t->tm_year - 2000;
-        leap_count += years/400 * 97;
-        years %= 400;
-        leap_count += years/100 * 24;
-        years %= 100;
-        leap_count += (years-1)/4+1;
-        // 1972 1976 1980 1984 1988 1992 1996
-        leap_count += 7;
-    } else {
-        for (int y=MIN(t->tm_year / 4 * 4 + (t->tm_year % 4 ? 1 : 0), 1972); y<MAX(t->tm_year, 1970); y+=4) {
-            if (y % 400 != 0 && y % 100 == 0) continue;
-            leap_count++;
-        }
-    }
-    i64 day_count = (t->tm_year - 1970) * 365 + (t->tm_year < 1970 ? -leap_count : leap_count);
-    day_count += t->tm_yday;
-
-    time_t sec_count = (day_count-1) * 86400 + t->tm_hour * 3600 + t->tm_min * 60 + t->tm_sec;
-    return sec_count;
 }
 
 time_t time(time_t *timer) {
@@ -130,6 +101,8 @@ time_t time(time_t *timer) {
     return tt;
 }
 
+static time_t startup_time;
+
 void time_init() {
-    
+    startup_time = time(NULL);  // Record startup time
 }

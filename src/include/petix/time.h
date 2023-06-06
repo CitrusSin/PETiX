@@ -20,5 +20,9 @@ struct tm {
 
 time_t mktime(const struct tm* t);
 time_t time(time_t *timer);
+struct tm *gmtime_s(struct tm *t, const time_t *timer);
+size_t strftime(char *str, size_t maxsize, const char *format, const struct tm *timeptr);
+
+void fix_time(struct tm* t);
 
 #endif

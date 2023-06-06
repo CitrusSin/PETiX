@@ -1,6 +1,6 @@
 #include <petix/petix.h>
 #include <petix/string.h>
-#include <petix/memory.h>
+#include <petix/memutil.h>
 #include <petix/console.h>
 #include <petix/assert.h>
 
@@ -230,7 +230,7 @@ static char* tkm_make_signed_output(token_machine* m, char* str, va_list *args) 
     return str;
 }
 
-static char* tkm_make_unsigned_output(token_machine* m, char *str, va_list args) {
+static char* tkm_make_unsigned_output(token_machine* m, char *str, va_list *args) {
     char buf[128], prefix[128];
     uint64_t val;
 

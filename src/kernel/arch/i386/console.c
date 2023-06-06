@@ -1,7 +1,7 @@
 #include <petix/petix.h>
 #include <petix/io.h>
 #include <petix/console.h>
-#include <petix/memory.h>
+#include <petix/memutil.h>
 #include <petix/arch/i386.h>
 
 #define CRT_ADDR_REG 0x3d4

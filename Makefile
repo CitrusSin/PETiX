@@ -65,6 +65,8 @@ $(BUILD)/kernel_i386.elf: \
 	$(BUILD)/kernel/memutil.o \
 	$(BUILD)/kernel/stdioimpl.o \
 	$(BUILD)/kernel/assert.o \
+	$(BUILD)/kernel/time.o \
+	$(BUILD)/kernel/memory.o \
 	$(BUILD)/kernel/alg/priorityqueue.o \
 	$(BUILD)/kernel/arch/i386/i64arith.o \
 	$(BUILD)/kernel/arch/i386/console.o \

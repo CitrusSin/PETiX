@@ -47,20 +47,19 @@ char *get_cpu_type(char *str)
     return strcpy(str, (const char *)arr);
 }
 
-void kernel_init()
+void kernel_init(int magic, void* ards)
 {
     petix_console_init();
     petix_console_clear();
+    
+
+    assert(magic == PETIX_MAGIC);
+    printk("Ards: %p\n", ards);
 
     gdt_init();
     interrupt_init();
     clock_init();
     time_init();
-
-    asm volatile (
-        "sti\n"
-        "movl %eax, %eax"
-    );
 
     printk("PETiX v0.1\n");
     printk("Entering kernel\n");
@@ -68,10 +67,8 @@ void kernel_init()
     printk("CPU Manufacturer: \t%s\n", get_cpu_manufacturer(cpu_type));
     printk("CPU Type: \t\t%s\n", get_cpu_type(cpu_type));
 
-    printk("TestTest\n");
-
     for (int i=0; ; i++) {
-        printk("Msg %ld\n", time(NULL));
+        //printk("Msg %ld\n", time(NULL));
         delay(1000);
     }
 }

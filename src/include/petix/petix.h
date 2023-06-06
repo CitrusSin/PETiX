@@ -6,7 +6,7 @@
 
 #define PETIX_MAGIC 1346720841
 
-void kernel_init();
+void kernel_init(int magic, void* ards);
 void clock_init();
 void time_init();
 

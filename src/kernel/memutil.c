@@ -1,4 +1,4 @@
-#include <petix/memory.h>
+#include <petix/memutil.h>
 #include <petix/string.h>
 
 void *memmove(void *dst, void *src, size_t n)
