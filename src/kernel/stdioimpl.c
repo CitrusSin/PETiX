@@ -167,7 +167,7 @@ static bool tkm_read_char(token_machine* m, char c) {
     break;
     }
     // Do not end up reading
-    return false;
+    return m->finished;
 }
 
 static char* tkm_make_signed_output(token_machine* m, char* str, va_list *args) {
@@ -393,9 +393,9 @@ char* sprintf(char* str, const char* format, ...) {
 }
 
 void vprintk(const char* format, va_list args) {
-    char msg[512];
+    char msg[1024];
     vsprintf(msg, format, args);
-    petix_console_print(msg);
+    ptxcon_print(msg);
 }
 
 void printk(const char* format, ...) {
@@ -403,4 +403,4 @@ void printk(const char* format, ...) {
     va_start(args, format);
     vprintk(format, args);
     va_end(args);
-}
+}    

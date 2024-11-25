@@ -2,7 +2,6 @@
 #include <petix/io.h>
 #include <petix/console.h>
 #include <petix/memutil.h>
-#include <petix/arch/i386.h>
 
 #define CRT_ADDR_REG 0x3d4
 #define CRT_DATA_REG 0x3d5
@@ -34,7 +33,7 @@ static u16 *screen_base = (u16 *)0xb8000;
 
 static int width = 80, height = 25;
 
-void petix_console_init()
+void ptxcon_init()
 {
     ENTER_NON_INTERRUPT;
 
@@ -51,12 +50,12 @@ void petix_console_init()
     addr += VMEM_BASE;
     screen_base = (u16 *)addr;
 
-    petix_console_clear();
+    ptxcon_console_clear();
 
     EXIT_NON_INTERRUPT;
 }
 
-void petix_console_set_linear_position(u32 pos)
+void ptxcon_set_linear_position(u32 pos)
 {
     ENTER_NON_INTERRUPT;
 
@@ -68,7 +67,7 @@ void petix_console_set_linear_position(u32 pos)
     EXIT_NON_INTERRUPT;
 }
 
-u32 petix_console_get_linear_position()
+u32 ptxcon_linear_position()
 {
     ENTER_NON_INTERRUPT;
 
@@ -87,25 +86,25 @@ u32 petix_console_get_linear_position()
     return pos;
 }
 
-void petix_console_set_position(u32 x, u32 y)
+void ptxcon_set_position(u32 x, u32 y)
 {
     u32 pos = x + y * width;
-    petix_console_set_linear_position(pos);
+    ptxcon_set_linear_position(pos);
 }
 
-void petix_console_get_position(u32 *x, u32 *y)
+void ptxcon_get_position(u32 *x, u32 *y)
 {
-    u32 pos = petix_console_get_linear_position();
+    u32 pos = ptxcon_linear_position();
 
     *x = pos % width;
     *y = pos / width;
 }
 
-void petix_console_clear()
+void ptxcon_console_clear()
 {
     ENTER_NON_INTERRUPT;
 
-    petix_console_set_position(0, 0);
+    ptxcon_set_position(0, 0);
 
     for (int i = 0; i < width * height; i++)
     {
@@ -119,7 +118,7 @@ static void console_scroll(u32 line_count)
 {
     if (line_count >= height)
     {
-        petix_console_clear();
+        ptxcon_console_clear();
         return;
     }
     if (line_count == 0) {
@@ -135,30 +134,30 @@ static void console_scroll(u32 line_count)
 static void process_cr()
 {
     u32 x, y;
-    petix_console_get_position(&x, &y);
-    petix_console_set_position(0, y);
+    ptxcon_get_position(&x, &y);
+    ptxcon_set_position(0, y);
 }
 
 static void process_lf()
 {
     u32 x, y;
-    petix_console_get_position(&x, &y);
+    ptxcon_get_position(&x, &y);
     if (y + 1 >= height)
     {
         console_scroll(1);
         x = 0;
-        petix_console_set_position(x, y);
+        ptxcon_set_position(x, y);
     }
     else
     {
-        petix_console_set_position(0, ++y);
+        ptxcon_set_position(0, ++y);
     }
 }
 
 static void process_ht()
 {
     u32 x, y;
-    petix_console_get_position(&x, &y);
+    ptxcon_get_position(&x, &y);
     u32 nx = (x / 8 + 1) * 8, ny = y;
     if (nx >= width)
     {
@@ -170,7 +169,7 @@ static void process_ht()
             ny--;
         }
     }
-    petix_console_set_position(nx, ny);
+    ptxcon_set_position(nx, ny);
 }
 
 static void process_bel() {
@@ -179,28 +178,28 @@ static void process_bel() {
 
 static void process_bs() {
     u32 x, y;
-    petix_console_get_position(&x, &y);
+    ptxcon_get_position(&x, &y);
     if (x > 0) x--;
-    petix_console_set_position(x, y);
+    ptxcon_set_position(x, y);
 }
 
-void petix_console_putchar(char c)
+void ptxcon_putchar(char c)
 {
     ENTER_NON_INTERRUPT;
 
     if (DISPLAYABLE(c))
     {
-        u32 pos = petix_console_get_linear_position() + 1;
+        u32 pos = ptxcon_linear_position() + 1;
 
         if (pos >= width * height)
         {
             int x, y;
             console_scroll(1);
-            petix_console_set_position(0, height - 1);
+            ptxcon_set_position(0, height - 1);
             pos = width * (height - 1);
         }
 
-        petix_console_set_linear_position(pos);
+        ptxcon_set_linear_position(pos);
 
         screen_base[pos - 1] = MAKE_CHAR(c);
     }
@@ -237,12 +236,12 @@ void petix_console_putchar(char c)
     EXIT_NON_INTERRUPT;
 }
 
-void petix_console_print(const char *message)
+void ptxcon_print(const char *message)
 {
     ENTER_NON_INTERRUPT;
 
     int n = width * height;
-    int pos = petix_console_get_linear_position();
+    int pos = ptxcon_linear_position();
     for (const char *p = message; *p; p++)
     {
         if (DISPLAYABLE(*p) && pos - 1 < n)
@@ -251,12 +250,12 @@ void petix_console_print(const char *message)
         }
         else
         {
-            petix_console_set_linear_position(pos);
-            petix_console_putchar(*p);
-            pos = petix_console_get_linear_position();
+            ptxcon_set_linear_position(pos);
+            ptxcon_putchar(*p);
+            pos = ptxcon_linear_position();
         }
     }
-    petix_console_set_linear_position(pos);
+    ptxcon_set_linear_position(pos);
 
     EXIT_NON_INTERRUPT;
 }

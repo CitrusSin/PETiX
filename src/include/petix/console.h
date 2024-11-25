@@ -3,13 +3,13 @@
 
 #include "./types.h"
 
-void petix_console_init();
-void petix_console_set_position(u32 x, u32 y);
-void petix_console_set_linear_position(u32 pos);
-void petix_console_get_position(u32* x, u32* y);
-u32 petix_console_get_linear_position();
-void petix_console_clear();
-void petix_console_putchar(char c);
-void petix_console_print(const char* message);
+void ptxcon_init();
+void ptxcon_set_position(u32 x, u32 y);
+void ptxcon_set_linear_position(u32 pos);
+void ptxcon_get_position(u32* x, u32* y);
+u32 ptxcon_linear_position();
+void ptxcon_console_clear();
+void ptxcon_putchar(char c);
+void ptxcon_print(const char* message);
 
 #endif

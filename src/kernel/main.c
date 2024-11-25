@@ -3,8 +3,8 @@
 #include <petix/string.h>
 #include <petix/stdarg.h>
 #include <petix/assert.h>
+#include <petix/memory.h>
 #include <petix/time.h>
-#include <petix/arch/i386.h>
 
 char *get_cpu_manufacturer(char *str)
 {
@@ -47,28 +47,38 @@ char *get_cpu_type(char *str)
     return strcpy(str, (const char *)arr);
 }
 
-void kernel_init(int magic, void* ards)
+void kernel_init(int magic, void* ards_ptr)
 {
-    petix_console_init();
-    petix_console_clear();
+    ptxcon_init();
+    ptxcon_console_clear();
+
+    printk("PETiX v0.1\n");
+    printk("Entering kernel\n");
     
-
-    assert(magic == PETIX_MAGIC);
-    printk("Ards: %p\n", ards);
-
+    memory_init(magic, ards_ptr);
     gdt_init();
     interrupt_init();
     clock_init();
     time_init();
 
-    printk("PETiX v0.1\n");
-    printk("Entering kernel\n");
+    asm volatile (
+        "sti"
+    );
+
     char cpu_type[49];
     printk("CPU Manufacturer: \t%s\n", get_cpu_manufacturer(cpu_type));
     printk("CPU Type: \t\t%s\n", get_cpu_type(cpu_type));
+    printk("\a");
 
-    for (int i=0; ; i++) {
-        //printk("Msg %ld\n", time(NULL));
-        delay(1000);
+    for (int i=0; i<1000; i++) {
+        time_t tmt = time(NULL);
+        char timetype[256];
+        struct tm tmstr;
+        gmtime_s(&tmstr, &tmt);
+        strftime(timetype, 255, "%Y-%m-%d %H:%M:%S", &tmstr);
+        printk("%s\r", timetype);
+        delay(10);
     }
+
+    int u = 1 / 0;
 }

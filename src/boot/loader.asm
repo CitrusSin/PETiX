@@ -37,7 +37,7 @@ prepare_protected_mode:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-    ; Refresh CS register hidden part and enter P mode
+    ; Refresh CS register cache and enter P mode
     jmp dword code_selector:protected_mode
 
 error:

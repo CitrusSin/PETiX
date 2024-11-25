@@ -7,6 +7,13 @@ extern interrupt_handler_table
 
 %macro INTERRUPT_HANDLER_DECLARE 2
 interrupt_%1:
+    pushad
+    push ds
+    push es
+    push fs
+    push gs
+    push ss
+    push esp
 %ifn %2
     push 0x00000000
 %endif
@@ -15,47 +22,15 @@ interrupt_%1:
 %endmacro
 
 interrupt_entry:
-    xchg eax, [esp] ; Store eax to stack and get the interrupt number
-
-    push ebp
-    mov ebp, esp
-
-    push esp
-    add dword [esp], (3*4)+(2*4)
-    push edx
-    push ecx
-    push ebx
-    push edi
-    push esi
-    push ss
-    push gs
-    push fs
-    push es
-    push ds
-
-    ; EAX is the interrupt number
-    push esp            ; Call with the register status struct
-    push dword [esp+14*4]
-    push eax
+    mov eax, [esp]
     call [interrupt_handler_table + eax * 4]
-    add esp, 3*4
-
-    pop ds
-    pop es
-    pop fs
+    add esp, 4 *3 ; POP * 3
+    add esp, 4 ;pop ss
     pop gs
-    add esp, 4 ; Do NOT modify ss
-    pop esi
-    pop edi
-    pop ebx
-    pop ecx
-    pop edx
-    add esp, 4  ; Do NOT modify esp
-
-    mov esp, ebp
-    pop ebp
-    pop eax
-    add esp, 4
+    pop fs
+    pop es
+    pop ds
+    popad
     iret
 
 INTERRUPT_HANDLER_DECLARE 0x00, 0

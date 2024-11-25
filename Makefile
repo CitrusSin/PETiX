@@ -14,6 +14,9 @@ CFLAGS := $(strip $(CFLAGS))
 DEBUG := -g -DDEBUG
 INCLUDE := -I$(SRC)/include
 
+.PHONY: all
+all: $(BUILD)/master_i386.img
+
 .PHONY: bochs
 bochs: $(BUILD)/master_i386.img
 	bochs -q -f bochsrc
@@ -28,7 +31,7 @@ qemui386: $(BUILD)/master_i386.img
 		-m 32M \
 		-boot c \
 		-drive file=$<,if=ide,index=0,media=disk,format=raw \
-		-audiodev pa,id=hda \
+		-audiodev pipewire,id=hda \
 		-machine pcspk-audiodev=hda
 
 .PHONY: qemui386-gdb
@@ -38,7 +41,7 @@ qemui386-gdb: $(BUILD)/master_i386.img
 		-m 32M \
 		-boot c \
 		-drive file=$<,if=ide,index=0,media=disk,format=raw \
-		-audiodev pa,id=hda \
+		-audiodev pipewire,id=hda \
 		-machine pcspk-audiodev=hda
 
 .PHONY: clean
@@ -60,21 +63,20 @@ $(BUILD)/kernel/%.o: $(SRC)/kernel/%.c
 
 
 $(BUILD)/kernel_i386.elf: \
-	$(BUILD)/kernel/arch/i386/start.o \
+	$(BUILD)/kernel/start.o \
 	$(BUILD)/kernel/main.o \
 	$(BUILD)/kernel/memutil.o \
 	$(BUILD)/kernel/stdioimpl.o \
 	$(BUILD)/kernel/assert.o \
-	$(BUILD)/kernel/time.o \
+	$(BUILD)/kernel/date.o \
 	$(BUILD)/kernel/memory.o \
 	$(BUILD)/kernel/alg/priorityqueue.o \
-	$(BUILD)/kernel/arch/i386/i64arith.o \
-	$(BUILD)/kernel/arch/i386/console.o \
-	$(BUILD)/kernel/arch/i386/gdt.o \
-	$(BUILD)/kernel/arch/i386/time.o \
-	$(BUILD)/kernel/arch/i386/clock.o \
-	$(BUILD)/kernel/arch/i386/interrupt.o \
-	$(BUILD)/kernel/arch/i386/interrupt_handler.o
+	$(BUILD)/kernel/i64arith.o \
+	$(BUILD)/kernel/console.o \
+	$(BUILD)/kernel/gdt.o \
+	$(BUILD)/kernel/clock.o \
+	$(BUILD)/kernel/interrupt.o \
+	$(BUILD)/kernel/interrupt_handler.o
 
 	ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)
 

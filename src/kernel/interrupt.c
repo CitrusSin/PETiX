@@ -1,7 +1,6 @@
 #include <petix/petix.h>
 #include <petix/assert.h>
 #include <petix/io.h>
-#include <petix/arch/i386.h>
 
 static gate_descriptor_t idt[IDT_SIZE];
 static ptr_dt idt_ptr;
@@ -44,17 +43,17 @@ static void interrupt_exception_handler(int number, int error_code, cpu_i386_int
     char register_status[256];
     sprintf(
         register_status,
-        "EAX=%#010x, EBX=%#010x, ECX=%#010x, EDX=%#010x\nESI=%#010X, EDI=%#010x, EBP=%#010x, ESP=%#010x\n CS=    %#06x, EIP=%#010x, EFLAGS=%#010x",
+        "EAX=%#010x, EBX=%#010x, ECX=%#010x, EDX=%#010x\nESI=%#010X, EDI=%#010x, EBP=%#010x, ESP=%#010x\nEIP=%#010x, EFLAGS=%#010x",
         regs->eax, regs->ebx, regs->ecx, regs->edx,
         regs->esi, regs->edi, regs->ebp, regs->esp,
-        regs->cs, regs->eip, regs->eflags
+        regs->eip, regs->eflags
     );
 
     char segment_register_status[256];
     sprintf(
         segment_register_status,
-        "DS=%#06x, ES=%#06x, FS=%#06x, GS=%#06x\nSS=%#06x",
-        regs->ds, regs->es, regs->fs, regs->gs, regs->ss
+        "DS=%#06x, ES=%#06x, FS=%#06x, GS=%#06x\nCS=%#06x, SS=%#06x",
+        regs->ds, regs->es, regs->fs, regs->gs, regs->cs, regs->ss
     );
 
     panic(
@@ -135,9 +134,4 @@ void interrupt_init() {
     for (int num = PIC_BEGIN_INTERRUPT; num < PIC_BEGIN_INTERRUPT + 0x10; num++) {
         register_interrupt_handler(num, outer_interrupt_handler);
     }
-
-    asm volatile (
-        "sti\n"
-        "movl %eax, %eax"
-    );
 }

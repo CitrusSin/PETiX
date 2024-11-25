@@ -29,7 +29,7 @@ error:
         hlt
         jmp .hltl
 
-; ds:[di] Destination, ecx: Begi@ext:doinkythederp.nasm-language-supportn sector, bl: Sector count
+; ds:[di] Destination, ecx: Begin sector, bl: Sector count
 rdisk:
     mov dx, 0x1f2
     mov al, bl

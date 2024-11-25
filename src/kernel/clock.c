@@ -1,7 +1,6 @@
 #include <petix/petix.h>
 #include <petix/io.h>
 #include <petix/assert.h>
-#include <petix/arch/i386.h>
 
 #define CLOCK_CTRL 0x43
 #define CLOCK_0 0x40
@@ -71,10 +70,8 @@ void clock_init() {
     const int clock_count = 1193;
 
     register_interrupt_handler(CLOCK_INTERRUPT, clock_interrupt_handler);
-    asm volatile ("cli");
     OUT8(CLOCK_CTRL, 0b00110100);
     OUT8(CLOCK_0, clock_count&0xff);
     OUT8(CLOCK_0, (clock_count>>8)&0xff);
-    asm volatile ("sti");
     PTDEBUG("Clock init done.");
 }

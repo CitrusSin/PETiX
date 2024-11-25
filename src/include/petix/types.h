@@ -10,7 +10,7 @@
 
 #define __packed __attribute__((packed))
 
-typedef unsigned int size_t;
+typedef unsigned int            size_t;
 
 typedef char                    int8_t;
 typedef unsigned char           uint8_t;
